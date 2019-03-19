@@ -11,7 +11,9 @@ class PhoneBookTest {
     @Tag("addName")
     void addName() {
         testBook.addName("Test");
-        assertTrue(testBook.book.containsKey("Test"));
+        assertTrue(testBook.getNames().contains("Test"));
+        testBook.addName("Test");
+        assertEquals(1, testBook.getNames().size());
     }
 
     @Test
@@ -19,11 +21,15 @@ class PhoneBookTest {
     void addPhone() {
         testBook.addName("Test");
         testBook.addPhone("+7", "Test");
-        assertTrue(testBook.book.get("Test").contains("+7"));
+        assertTrue(testBook.getPhones("Test").contains("+7"));
 
+        assertFalse(testBook.getNames().contains("NotTest"));
         testBook.addPhone("+9", "NotTest");
-        assertTrue(testBook.book.get("NotTest") == null);
+        assertTrue(testBook.getPhones("NotTest").contains("+9"));
+
+        assertThrows(IllegalArgumentException.class, () -> testBook.addPhone("^_^", "0_0"));
     }
+
 
     @Test
     @Tag("deletePhone")
@@ -31,7 +37,8 @@ class PhoneBookTest {
         testBook.addName("Test");
         testBook.addPhone("+7", "Test");
         testBook.deletePhone("+7", "Test");
-        assertFalse(testBook.book.get("Test").contains("+7"));
+        assertFalse(testBook.getPhones("Test").contains("+7"));
+        assertFalse(testBook.deletePhone("+9", "NotTest"));
     }
 
     @Test
@@ -40,7 +47,8 @@ class PhoneBookTest {
         testBook.addName("Test");
         testBook.addName("NotTest");
         testBook.deleteName("Test");
-        assertFalse(testBook.book.containsKey("Test"));
+        assertFalse(testBook.getNames().contains("Test"));
+        assertFalse(testBook.deleteName("ActuallyTest"));
     }
 
     @Test
@@ -53,15 +61,15 @@ class PhoneBookTest {
         check.add("+7");
         check.add("+9");
         assertTrue(testBook.getPhones("Test").containsAll(check));
-        assertTrue(testBook.getPhones("NotTest").isEmpty());
+        assertNull(testBook.getPhones("NotTest"));
     }
 
     @Test
-    @Tag("getName")
-    void getName() {
+    @Tag("getNameByPhone")
+    void getNameByPhone() {
         testBook.addName("Test");
         testBook.addPhone("+7", "Test");
-        assertEquals("Test", testBook.getName("+7"));
-        assertEquals("This number is not associated with any name", testBook.getName("+9"));
+        assertEquals("Test", testBook.getNameByPhone("+7"));
+        assertNull(testBook.getNameByPhone("+9"));
     }
 }

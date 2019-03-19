@@ -1,36 +1,52 @@
-import java.util.HashMap;
-import java.util.ArrayList;
+import java.util.*;
 
-final class PhoneBook {
+public final class PhoneBook {
 
-    HashMap<String, ArrayList<String>> book = new HashMap<String, ArrayList<String>>();
+    private Map<String, Set<String>> book = new HashMap<String, Set<String>>();
 
-    void addName(String name) {
-        if (book.get(name) == null)
-            book.put(name, new ArrayList<String>());
+    public void addName(String name) {
+        book.computeIfAbsent(name, k -> new HashSet<String>());
     }
 
-    void addPhone(String phone, String name) {
+    public void addPhone(String phone, String name) {
+        Set<String> check = new HashSet<String>(Arrays.asList("0123456789+*#-".split("")));
+        if (check.containsAll(new HashSet<String>(Arrays.asList(phone.split("")))))
+            if (book.get(name) != null)
+                book.get(name).add(phone);
+            else {
+                addName(name);
+                book.get(name).add(phone);
+            }
+        else
+            throw new IllegalArgumentException("Phone number must consist only of digits and symbols \"+*#-\"");
+    }
+
+    public boolean deletePhone(String phone, String name) {
         if (book.get(name) != null)
-            book.get(name).add(phone);
+            book.get(name).remove(phone);
+        else return false;
+        return true;
     }
 
-    void deletePhone(String phone, String name) {
-        book.get(name).remove(phone);
+    public boolean deleteName(String name) {
+        if (book.containsKey(name))
+            book.remove(name);
+        else return false;
+        return true;
     }
 
-    void deleteName(String name) {
-        book.remove(name);
+    public Set<String> getPhones(String name) {
+        return book.get(name);
     }
 
-    ArrayList<String> getPhones(String name) {
-        return book.get(name) == null ? new ArrayList<String>() : book.get(name);
-    }
-
-    String getName(String phone) {
-        for (HashMap.Entry<String, ArrayList<String>> entry : book.entrySet())
+    public String getNameByPhone(String phone) {
+        for (Map.Entry<String, Set<String>> entry : book.entrySet())
             if (entry.getValue().contains(phone)) return entry.getKey();
-        return "This number is not associated with any name";
+        return null;
+    }
+
+    public Set getNames() {
+        return book.keySet();
     }
 
 }
